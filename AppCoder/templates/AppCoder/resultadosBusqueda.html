@@ -1,0 +1,19 @@
+{% extends "AppCoder/padre.html" %}
+{% load static %}
+{% block contenidoQueCambia %}
+
+{% if cursos %}
+<h3>Estamos buscando los cursos de la comision: {{comision}}</h3>
+<ul>
+    {% for curso in cursos %}
+    <li>Curso: {{curso.nombre}}, Comision: {{curso.comision}}</li>
+    <br>
+    {% endfor %}
+</ul>
+{% elif not comision %}
+<h2 style="color:orange">{{respuesta}}</h2>
+{% elif comision%}
+<h2 style="color:red">No se encontraron datos para esa comision</h2>
+{% endif %}
+
+{% endblock %}

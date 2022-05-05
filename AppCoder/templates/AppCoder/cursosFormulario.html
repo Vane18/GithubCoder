@@ -2,13 +2,7 @@
 {% load static %}
 {% block contenidoQueCambia %}
 
-<h1>CURSOS</h1>
-
-{% if formulario.errors %}
-<p style="color: red">Estan mal los datos, revisa</p>
-{% endif %}
-
-<form action="{% url 'cursos' %}" method="POST">
+<form action="{% url 'cursosFormulario' %}" method="POST">
     {% csrf_token %}
 
     <table>
@@ -17,4 +11,7 @@
     <input type="submit" value="Enviar formulario hecho por API">
 </form>
 
+<h1>CURSOS</h1>
+
 {% endblock %}
+
