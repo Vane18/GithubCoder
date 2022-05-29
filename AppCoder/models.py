@@ -15,12 +15,17 @@ class Estudiante(models.Model):
     nombre= models.CharField(max_length=50)
     apellido = models.CharField(max_length=50)
     email = models.CharField(max_length=50)
+    def __str__(self):
+        return "Nombre:" +(self.nombre)+" Apellido: "+str(self.apellido)+" Email: "+(self.email)
 
 class Profesor(models.Model):
     nombre= models.CharField(max_length=50)
     apellido= models.CharField(max_length=50)
     email= models.EmailField()
     profesion= models.CharField(max_length=50)
+
+    def __str__(self):
+        return "Nombre:" +(self.nombre)+" Apellido: "+str(self.apellido)+" Email: "+(self.email)+" Profesion: "+(self.profesion)
 
 class Entregable(models.Model):
     nombre= models.CharField(max_length=50)

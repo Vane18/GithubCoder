@@ -4,4 +4,10 @@
 
 <h1>ESTUDIANTES</h1>
 
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="ENVIAR">
+</form>
+
 {% endblock %}
