@@ -4,6 +4,10 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django import http
 from django.shortcuts import render
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth import login,authenticate,logout
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 from .models import *
 from django.http import HttpResponse
@@ -55,7 +59,7 @@ def buscar(request):
     else:
         respuesta = "No se ingresó ninguna comision"
         return render(request, 'AppCoder/ResultadosBusqueda.html', {'respuesta':respuesta})
-
+@login_required
 def eliminarProfesor(request, nombre):
     profesor=Profesor.objects.get(nombre=nombre)
     profesor.delete()
@@ -80,9 +84,9 @@ def editarProfesor(request, nombre):
         miFormulario=ProfeFormulario(initial={'nombre':profesor.nombre,'apellido':profesor.apellido,'email':profesor.email,'profesion':profesor.profesion})
     return render(request,'AppCoder/editarProfesor.html',{'formulario':miFormulario, 'nombre':nombre})
 
-class EstudianteList(ListView):
+class EstudianteList(LoginRequiredMixin, ListView):
     model = Estudiante
-    template_name = 'AppCoder/estudiantes.html'
+    template_name = 'AppCoder/estudiante_list.html'
 
 class EstudianteDetalle(DetailView):
     model = Estudiante
@@ -102,3 +106,35 @@ class EstudianteBorrar(DeleteView):
     model = Estudiante
     success_url = reverse_lazy('estudiante_listar')
     fields=['nombre','apellido','email']
+
+#-----LOGIN----------
+def login_request(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request=request, data=request.POST)
+        if form.is_valid():
+            usuario = form.cleaned_data.get('username')
+            clave = form.cleaned_data.get('password')
+            user = authenticate(username=usuario, password=clave)
+            if user is not None:
+                login(request, user)
+                return render(request,'AppCoder/inicio.html',{'usuario':usuario,'mensaje':'Bienvenido'})
+            else:
+                return render(request,'AppCoder/inicio.html',{'mensaje':'USUARIO INCORRECTO, VUELVA A INTENTARLO'})
+        else:
+            return render(request,'AppCoder/inicio.html',{'mensaje':'LOS DATOS INGRESADOS NO SON VÁLIDOS. VUELVA A INTENTARLO'})
+    else:
+        form=AuthenticationForm()
+        return render(request, 'AppCoder/login.html',{'form':form})
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            username= form.cleaned_data['username']
+            form.save()
+            return render(request, 'AppCoder/inicio.html',{'mensaje':f'Usuario: {username} creado de manera exitosa.'})
+        else:
+            return render(request, 'AppCoder/inicio.html',{'mensaje':'NO SE PUDO CREAR EL USUARIO'})
+    else:
+        form = UserRegistrationForm()
+        return render(request,'AppCoder/register.html',{'form':form})
