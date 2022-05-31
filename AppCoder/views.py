@@ -8,7 +8,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth import login,authenticate,logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.models import User
 from .models import *
 from django.http import HttpResponse
 from .forms import *
@@ -20,8 +20,10 @@ def curso(self):
     texto=f"------>Curso: {curso.nombre} Comision: {curso.comision}"
 
     return HttpResponse(texto)
+@login_required
 def inicio(request):
-    return render(request,'AppCoder/inicio.html')
+    avatares = Avatar.objects.filter(user=request.user.id)
+    return render(request,'AppCoder/inicio.html',{'url':avatares[0].imagen.url})
 
 def profesores(request):
     profesores=Profesor.objects.all()
@@ -138,3 +140,34 @@ def register(request):
     else:
         form = UserRegistrationForm()
         return render(request,'AppCoder/register.html',{'form':form})
+@login_required
+def editarPerfil(request):
+    usuario=request.user
+    if request.method == 'POST':
+        formulario=UserEditForm(request.POST, instance=usuario)
+        if formulario.is_valid():
+            informacion=formulario.cleaned_data
+            usuario.email=informacion['email']
+            usuario.password1=informacion['password1']
+            usuario.password2=informacion['password2']
+            usuario.save()
+            return render(request, 'AppCoder/inicio.html',{'usuario':usuario,'mensaje':'PERFIL EDITADO EXITOSAMENTE'})
+    else:
+        formulario=UserEditForm(instance=usuario)
+    return render(request,'AppCoder/editarPerfil.html',{'formulario':formulario,'usuario':usuario.username})
+
+@login_required
+def agregarAvatar(request):
+    user = User.objects.get(username=request.user)
+    if request.method == 'POST':
+        formulario=AvatarForm(request.POST, request.FILES)
+        if formulario.is_valid():
+            avatarViejo=Avatar.objects.get(user=request.user)
+            if(avatarViejo.imagen):
+                avatarViejo.delete()
+            imagen=Avatar(user=user, imagen=formulario.cleaned_data['avatar'])
+            imagen.save()
+            return render(request,'AppCoder/inicio.html',{'usuario':user,'mensaje':'AVATAR AGREGADO EXITOSAMENTE'})
+    else:
+        formulario=AvatarForm()
+    return render(request, 'AppCoder/agregarAvatar.html',{'formulario':formulario,'usuario':user})
